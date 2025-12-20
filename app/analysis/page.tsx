@@ -29,7 +29,9 @@ const TEXT = {
 
 export default function AnalysisPage() {
   const searchParams = useSearchParams();
-  const initialLang = (searchParams.get("lang") as Lang) || "en";
+  const initialLang: Lang =
+  searchParams?.get("lang") === "zh" ? "zh" : "en";
+
 
   const [lang, setLang] = useState<Lang>(initialLang);
   const [mode, setMode] = useState<Mode>("single");
