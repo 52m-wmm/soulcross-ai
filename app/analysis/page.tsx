@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
 import SingleForm from "./single/form";
 import DoubleForm from "./double/form";
 
@@ -27,10 +26,13 @@ const TEXT = {
   },
 };
 
-export default function AnalysisPage() {
-  const searchParams = useSearchParams();
+export default function AnalysisPage({
+  searchParams,
+}: {
+  searchParams?: { lang?: string };
+}) {
   const initialLang: Lang =
-  searchParams?.get("lang") === "zh" ? "zh" : "en";
+    searchParams?.lang === "zh" ? "zh" : "en";
 
 
   const [lang, setLang] = useState<Lang>(initialLang);
