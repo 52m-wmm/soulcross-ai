@@ -60,3 +60,6 @@ Personal Growth Through Understanding: Dive into the psychology and self-reflect
 
 Your feedback is invaluable! If you have suggestions for new features, improvements, or even corrections, feel free to open an issue or submit a pull request. We welcome contributions from everyone!
 Thank you for exploring SoulCross-AI! We hope it brings more understanding and growth to your relationships. Start analyzing, start growing!
+
+<img width="1988" height="1530" alt="49b2e34d-da07-4fd2-b61d-835160e4b90c" src="https://github.com/user-attachments/assets/372bffc8-cef9-428b-928f-77d6335354b0" />
+
