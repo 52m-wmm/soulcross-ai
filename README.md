@@ -1,65 +1,90 @@
-# SoulCross-AI: Relationship Insights Powered by AI
+# SoulCross AI Paywall Demo (Next.js + Stripe)
 
-SoulCross-AI is a web-based tool designed to provide relationship insights and guidance using AI-driven analysis. Whether you're navigating a personal relationship or exploring connections with others, SoulCross-AI uses the power of artificial intelligence to offer meaningful perspectives based on your unique dynamics.
+This project demonstrates a SaaS paywall flow for a relationship reading app:
+- Free Preview: limited output, always available
+- Full Reading: unlocked only after Stripe payment confirmation via webhook
 
-## 🚀 Features
+## Tech
+- Next.js 14 App Router
+- TypeScript
+- Stripe Checkout + Stripe Webhook signature verification
+- File-based JSON storage (`data/paywall-db.json`) for demo only
 
-- **Personalized Relationship Analysis**: Get insights into your relationship with another person, based on the information you provide. Whether it's a romantic connection or a deep friendship, SoulCross-AI offers tailored feedback.
-  
-- **Compatibility & Understanding**: Explore the dynamics between you and your partner/friend, discovering strengths, challenges, and potential growth areas for a healthier connection.
-  
-- **Easy-to-Use Interface**: No complex jargon! SoulCross-AI is designed to be accessible, with simple and intuitive steps to get started. You don’t need to be an expert to get valuable insights.
-  
-- **Privacy Focused**: All your data remains private and is not shared. Your relationship insights are generated based solely on the information you provide during analysis.
+## Paywall Flow
+1. User submits form with Person A/B data
+2. `POST /api/preview` returns a limited preview and stores `reading_request`
+3. `POST /api/checkout` creates (or reuses) order + Stripe Checkout session
+4. Stripe sends `checkout.session.completed` to `POST /api/webhook/stripe`
+5. Webhook verifies signature, marks order `paid`, generates full report exactly once
+6. `GET /api/reading/:id` serves preview/full state for `/reading/[id]`
 
-## 🛠️ Getting Started
+## Data Model (Demo)
+- `reading_request`
+  - id, createdAt, mode (`preview`/`full`), personA/personB payload
+  - previewResult, fullResult
+- `order`
+  - id, readingRequestId, stripeSessionId, status (`pending`/`paid`), idempotencyKey
 
-To start using SoulCross-AI locally, follow these simple steps:
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/52m-wmm/soulcross-ai.git
-   cd soulcross-ai
-
-
-Install dependencies:
-
+## Local Setup
+1. Install dependencies
+```bash
 npm install
+```
 
+2. Create env file
+```bash
+cp .env.example .env.local
+```
 
-Run the development server:
+3. Fill Stripe and API envs in `.env.local`
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `NEXT_PUBLIC_BASE_URL=http://localhost:3000`
 
+4. Run app
+```bash
 npm run dev
+```
 
+## Stripe Webhook (Required for Full Unlock)
+1. Start local forwarding
+```bash
+stripe listen --forward-to localhost:3000/api/webhook/stripe
+```
 
-Open your browser and visit http://localhost:3000
- to start using the app.
+2. Copy the printed webhook signing secret into `.env.local`
+```env
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+```
 
-🌐 Deploy on Vercel
+3. Restart Next.js dev server after updating env
 
-If you want to deploy your own version of SoulCross-AI, you can easily do so on Vercel. Here’s how to get started:
+## Test Card
+Use Stripe test card:
+- Card number: `4242 4242 4242 4242`
+- Any future date
+- Any CVC
+- Any ZIP
 
-Fork the repository to your GitHub account.
+## Verify Idempotency
+1. Click unlock repeatedly with same input
+- Expected: same order/session reused, no duplicate full report records
 
-Go to Vercel
- and create a new project.
+2. Trigger duplicate webhook events
+```bash
+stripe trigger checkout.session.completed
+stripe trigger checkout.session.completed
+```
+- Expected: first event updates to paid and generates full report
+- Later duplicates do not generate additional reports
 
-Select your forked repository and click "Deploy".
+## Security Notes
+- Full report is generated only on server after verified paid webhook
+- Frontend button state is not trusted for authorization
+- Webhook signature is verified using raw request body
+- Secrets must stay in env files, never in source code
 
-Your app will be live in minutes!
-
-🧠 Learn More
-
-If you're curious about how AI can help you understand relationships better, check out these additional resources:
-
-Understanding SoulCross-AI: Explore the technology behind SoulCross-AI and how it uses AI to generate relationship insights.
-
-Personal Growth Through Understanding: Dive into the psychology and self-reflection that SoulCross-AI promotes to help you grow in your relationships.
-
-💬 Feedback and Contributions
-
-Your feedback is invaluable! If you have suggestions for new features, improvements, or even corrections, feel free to open an issue or submit a pull request. We welcome contributions from everyone!
-Thank you for exploring SoulCross-AI! We hope it brings more understanding and growth to your relationships. Start analyzing, start growing!
-
-<img width="1988" height="1530" alt="49b2e34d-da07-4fd2-b61d-835160e4b90c" src="https://github.com/user-attachments/assets/372bffc8-cef9-428b-928f-77d6335354b0" />
-
+## Demo Storage Limitation
+`data/paywall-db.json` is for portfolio/demo convenience.
+For production, use a real database (Postgres/MySQL/Supabase/Neon) with transactional guarantees.
