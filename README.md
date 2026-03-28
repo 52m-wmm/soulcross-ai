@@ -1,90 +1,118 @@
-# SoulCross AI Paywall Demo (Next.js + Stripe)
+# 🔮 SoulCross AI — AI Analysis & Recommendation System
 
-This project demonstrates a SaaS paywall flow for a relationship reading app:
-- Free Preview: limited output, always available
-- Full Reading: unlocked only after Stripe payment confirmation via webhook
+## 🚀 Overview | 项目简介
 
-## Tech
-- Next.js 14 App Router
+**EN**  
+SoulCross AI is an AI-powered analysis and recommendation system designed to provide personalized insights and suggestions based on user input.
+
+It demonstrates how LLM can be integrated into a real product with user interaction, state management, and payment system.
+
+**CN**  
+SoulCross AI 是一个基于 AI 的分析与建议系统，根据用户输入生成个性化分析结果与建议。
+
+该项目展示了如何将大语言模型接入真实产品，并结合状态管理与支付系统实现完整闭环。
+
+---
+
+## 🎯 Problem | 解决的问题
+
+**EN**
+- Users need personalized insights but lack structured tools  
+- Traditional systems cannot generate dynamic recommendations  
+- AI tools often lack product-level integration  
+
+**CN**
+- 用户缺乏结构化的个性化分析工具  
+- 传统系统无法生成动态建议  
+- AI工具缺乏产品化落地  
+
+---
+
+## 💡 Solution | 解决方案
+
+**EN**
+- LLM-powered analysis engine  
+- Dynamic recommendation generation  
+- Real-time user interaction  
+- Payment integration for monetization  
+
+**CN**
+- 基于 LLM 的分析引擎  
+- 动态生成个性化建议  
+- 实时用户交互  
+- 集成支付系统实现商业化  
+
+---
+
+## 🧠 Core Features | 核心功能
+
+- 🤖 AI Analysis（智能分析）
+- 📊 Personalized Recommendations（个性化建议）
+- 💬 Interactive User Input（交互输入）
+- 💳 Payment Integration（支付系统）
+- ⚡ Real-time Response（实时响应）
+
+---
+
+## 🏗️ Tech Stack | 技术架构
+
+**Frontend**
+- React
+- Zustand（状态管理）
+- TailwindCSS
+
+**Backend**
+- Node.js
 - TypeScript
-- Stripe Checkout + Stripe Webhook signature verification
-- File-based JSON storage (`data/paywall-db.json`) for demo only
 
-## Paywall Flow
-1. User submits form with Person A/B data
-2. `POST /api/preview` returns a limited preview and stores `reading_request`
-3. `POST /api/checkout` creates (or reuses) order + Stripe Checkout session
-4. Stripe sends `checkout.session.completed` to `POST /api/webhook/stripe`
-5. Webhook verifies signature, marks order `paid`, generates full report exactly once
-6. `GET /api/reading/:id` serves preview/full state for `/reading/[id]`
+**AI**
+- LLM (Prompt-based analysis)
 
-## Data Model (Demo)
-- `reading_request`
-  - id, createdAt, mode (`preview`/`full`), personA/personB payload
-  - previewResult, fullResult
-- `order`
-  - id, readingRequestId, stripeSessionId, status (`pending`/`paid`), idempotencyKey
+**Payment**
+- Stripe
 
-## Local Setup
-1. Install dependencies
-```bash
-npm install
-```
+---
 
-2. Create env file
-```bash
-cp .env.example .env.local
-```
+## ⚙️ System Design | 系统设计
 
-3. Fill Stripe and API envs in `.env.local`
-- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
-- `STRIPE_SECRET_KEY`
-- `STRIPE_WEBHOOK_SECRET`
-- `NEXT_PUBLIC_BASE_URL=http://localhost:3000`
+**EN**
+- Prompt-based AI analysis pipeline  
+- Structured user input processing  
+- State management with Zustand  
+- API-driven backend architecture  
+- Payment workflow integration  
 
-4. Run app
-```bash
-npm run dev
-```
+**CN**
+- 基于 Prompt 的分析流程  
+- 用户输入结构化处理  
+- 使用 Zustand 进行状态管理  
+- API驱动的后端架构  
+- 支付流程集成  
 
-## Stripe Webhook (Required for Full Unlock)
-1. Start local forwarding
-```bash
-stripe listen --forward-to localhost:3000/api/webhook/stripe
-```
+---
 
-2. Copy the printed webhook signing secret into `.env.local`
-```env
-STRIPE_WEBHOOK_SECRET=whsec_xxx
-```
+## 🔄 Workflow | 系统流程
 
-3. Restart Next.js dev server after updating env
+1. User submits input  
+2. System processes input  
+3. LLM generates analysis  
+4. Results returned to frontend  
+5. Payment triggered if needed  
 
-## Test Card
-Use Stripe test card:
-- Card number: `4242 4242 4242 4242`
-- Any future date
-- Any CVC
-- Any ZIP
+---
 
-## Verify Idempotency
-1. Click unlock repeatedly with same input
-- Expected: same order/session reused, no duplicate full report records
+## 📂 Project Structure | 项目结构
+/app → 前端页面
+/api → 后端接口
+/lib → 核心逻辑
+/state → 状态管理
 
-2. Trigger duplicate webhook events
-```bash
-stripe trigger checkout.session.completed
-stripe trigger checkout.session.completed
-```
-- Expected: first event updates to paid and generates full report
-- Later duplicates do not generate additional reports
 
-## Security Notes
-- Full report is generated only on server after verified paid webhook
-- Frontend button state is not trusted for authorization
-- Webhook signature is verified using raw request body
-- Secrets must stay in env files, never in source code
+---
 
-## Demo Storage Limitation
-`data/paywall-db.json` is for portfolio/demo convenience.
-For production, use a real database (Postgres/MySQL/Supabase/Neon) with transactional guarantees.
+## 🚧 Future Improvements | 后续可优化方向
+
+- More structured prompt templates（更结构化Prompt）
+- Multi-model support（多模型支持）
+- User history tracking（历史记录）
+- Recommendation optimization（推荐优化）
